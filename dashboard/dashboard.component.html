@@ -1,0 +1,262 @@
+<!-- dashboard.component.html -->
+<div class="dashboard-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon"><i class="icon-recycle"></i></span>
+      <span class="brand-name">TrashSmart</span>
+      <span class="brand-badge">Admin</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+        <i class="nav-icon icon-dashboard"></i>
+        <span>Tableau de bord</span>
+      </a>
+      <a routerLink="/bins" routerLinkActive="active" class="nav-item">
+        <i class="nav-icon icon-bin"></i>
+        <span>Poubelles</span>
+        <span class="nav-badge critical">{{ stats?.fullBins }}</span>
+      </a>
+      <a routerLink="/collections" routerLinkActive="active" class="nav-item">
+        <i class="nav-icon icon-truck"></i>
+        <span>Collectes</span>
+      </a>
+      <a routerLink="/analytics" routerLinkActive="active" class="nav-item">
+        <i class="nav-icon icon-chart"></i>
+        <span>Analytiques</span>
+      </a>
+      <a routerLink="/alerts" routerLinkActive="active" class="nav-item">
+        <i class="nav-icon icon-bell"></i>
+        <span>Alertes</span>
+        <span class="nav-badge warning" *ngIf="alerts.length">{{ alerts.length }}</span>
+      </a>
+      <a routerLink="/users" routerLinkActive="active" class="nav-item">
+        <i class="nav-icon icon-users"></i>
+        <span>Utilisateurs</span>
+      </a>
+      <a routerLink="/settings" routerLinkActive="active" class="nav-item">
+        <i class="nav-icon icon-settings"></i>
+        <span>Paramètres</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-avatar">AD</div>
+      <div class="admin-info">
+        <span class="admin-name">Admin Principal</span>
+        <span class="admin-role">Gestionnaire</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Top Header -->
+    <header class="top-header">
+      <div class="header-left">
+        <h1 class="page-title">Tableau de bord</h1>
+        <span class="refresh-info">Mis à jour {{ lastRefresh | date:'HH:mm:ss' }}</span>
+      </div>
+      <div class="header-right">
+        <button class="btn-refresh" (click)="loadData()">
+          <i class="icon-refresh"></i> Actualiser
+        </button>
+        <div class="date-chip">{{ lastRefresh | date:'EEEE d MMMM yyyy':'':'fr' }}</div>
+      </div>
+    </header>
+
+    <div class="dashboard-content" *ngIf="stats">
+
+      <!-- KPI Cards -->
+      <section class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon teal"><i class="icon-weight"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Déchets collectés</span>
+            <span class="kpi-value">{{ stats.totalCollected | number }} <small>kg</small></span>
+            <span class="kpi-sub kpi-up">+12% vs hier</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon green"><i class="icon-check-circle"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Efficacité du tri</span>
+            <span class="kpi-value">{{ stats.sortingEfficiency }}<small>%</small></span>
+            <div class="efficiency-bar">
+              <div class="efficiency-fill" [style.width.%]="stats.sortingEfficiency"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon blue"><i class="icon-map-pin"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Poubelles actives</span>
+            <span class="kpi-value">{{ stats.activeBins }}</span>
+            <span class="kpi-sub">{{ stats.fullBins }} nécessitent collecte</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon amber"><i class="icon-alert"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">Alertes actives</span>
+            <span class="kpi-value kpi-alert">{{ stats.alertsCount }}</span>
+            <span class="kpi-sub">{{ stats.alertsCount }} non résolues</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon coral"><i class="icon-leaf"></i></div>
+          <div class="kpi-body">
+            <span class="kpi-label">CO₂ économisé</span>
+            <span class="kpi-value">{{ stats.co2Saved | number }}<small> kg</small></span>
+            <span class="kpi-sub kpi-up">Ce mois-ci</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Charts Row 1 -->
+      <section class="charts-row">
+
+        <!-- Donut Chart -->
+        <div class="chart-card donut-card">
+          <div class="card-header">
+            <h2>Répartition par type de déchet</h2>
+            <span class="card-subtitle">Aujourd'hui · {{ stats.totalCollected | number }} kg total</span>
+          </div>
+          <div class="donut-layout">
+            <div class="canvas-wrap" style="position:relative; height:220px; width:220px;">
+              <canvas #donutCanvas
+                role="img"
+                aria-label="Donut chart montrant la répartition des déchets par type">
+              </canvas>
+              <div class="donut-center">
+                <span class="donut-center-value">{{ stats.sortingEfficiency }}%</span>
+                <span class="donut-center-label">triés</span>
+              </div>
+            </div>
+            <div class="donut-legend">
+              <div class="legend-item" *ngFor="let w of stats.wasteTypes">
+                <span class="legend-dot" [style.background]="w.color"></span>
+                <span class="legend-type">{{ w.type }}</span>
+                <span class="legend-kg">{{ w.kg }} kg</span>
+                <span class="legend-pct">{{ w.percent }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weekly Bar Chart -->
+        <div class="chart-card bar-card">
+          <div class="card-header">
+            <h2>Collecte hebdomadaire par type</h2>
+            <span class="card-subtitle">7 derniers jours · en kg</span>
+          </div>
+          <div class="bar-legend">
+            <span *ngFor="let w of stats.wasteTypes.slice(0,5)" class="legend-pill">
+              <span class="legend-dot" [style.background]="w.color"></span>{{ w.type }}
+            </span>
+          </div>
+          <div style="position:relative; height:210px;">
+            <canvas #barCanvas role="img" aria-label="Histogramme empilé de la collecte hebdomadaire"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- Charts Row 2 + Table -->
+      <section class="charts-row-2">
+
+        <!-- Efficiency Line Chart -->
+        <div class="chart-card line-card">
+          <div class="card-header">
+            <h2>Évolution de l'efficacité du tri</h2>
+            <span class="card-subtitle">30 derniers jours</span>
+          </div>
+          <div style="position:relative; height:180px;">
+            <canvas #lineCanvas role="img" aria-label="Courbe d'évolution de l'efficacité de tri sur 30 jours"></canvas>
+          </div>
+        </div>
+
+        <!-- Alerts Feed -->
+        <div class="chart-card alerts-card">
+          <div class="card-header">
+            <h2>Alertes récentes</h2>
+            <a routerLink="/alerts" class="card-link">Voir tout →</a>
+          </div>
+          <div class="alerts-list">
+            <div class="alert-item" *ngFor="let alert of alerts" [class]="'alert-' + alert.severity">
+              <div class="alert-icon">
+                <i [class]="alert.severity === 'critical' ? 'icon-alert-circle' : 'icon-alert-triangle'"></i>
+              </div>
+              <div class="alert-body">
+                <span class="alert-bin">{{ alert.binId }} · {{ alert.location }}</span>
+                <span class="alert-msg">{{ alert.message }}</span>
+              </div>
+              <span class="alert-time">{{ alert.time }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bins Status Table -->
+      <section class="bins-section">
+        <div class="chart-card">
+          <div class="card-header">
+            <h2>État des poubelles connectées</h2>
+            <span class="card-subtitle">{{ binStatuses.length }} poubelles surveillées en temps réel</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="bins-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Emplacement</th>
+                  <th>Type</th>
+                  <th>Remplissage</th>
+                  <th>Statut</th>
+                  <th>Dernière MAJ</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let bin of binStatuses" [class]="'row-' + bin.status">
+                  <td class="bin-id">{{ bin.id }}</td>
+                  <td>{{ bin.location }}</td>
+                  <td><span class="type-badge">{{ bin.type }}</span></td>
+                  <td>
+                    <div class="fill-bar-wrap">
+                      <div class="fill-bar">
+                        <div class="fill-fill"
+                          [style.width.%]="bin.fillLevel"
+                          [style.background]="getFillColor(bin.fillLevel)">
+                        </div>
+                      </div>
+                      <span class="fill-pct">{{ bin.fillLevel }}%</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span [class]="'status-badge ' + getStatusClass(bin.status)">
+                      {{ getStatusLabel(bin.status) }}
+                    </span>
+                  </td>
+                  <td class="text-muted">{{ bin.lastUpdate }}</td>
+                  <td>
+                    <button class="action-btn" [disabled]="bin.status === 'normal'">
+                      Planifier collecte
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div><!-- /dashboard-content -->
+  </main>
+</div>
