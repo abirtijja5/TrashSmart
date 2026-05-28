@@ -5,6 +5,7 @@
   </div>
   <div class="header-right">
     <button class="btn-refresh" (click)="load()"><i class="fa-solid fa-rotate-right"></i> Actualiser</button>
+    <button class="btn-new" (click)="openNew()"><i class="fa-solid fa-plus"></i> Enregistrer une collecte</button>
   </div>
 </header>
 
@@ -17,9 +18,7 @@
     <div class="table-wrap">
       <table class="bins-table">
         <thead>
-          <tr>
-            <th>Date</th><th>Poubelle</th><th>Type de déchet</th><th>Poids (kg)</th><th>Opérateur</th><th>Notes</th>
-          </tr>
+          <tr><th>Date</th><th>Poubelle</th><th>Type de déchet</th><th>Poids (kg)</th><th>Opérateur</th><th>Notes</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let c of collections">
@@ -37,4 +36,56 @@
       </table>
     </div>
   </div>
+</div>
+
+<!-- Modal : Enregistrer une collecte -->
+<div class="modal-overlay" *ngIf="showModal" (click)="showModal=false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-truck-fast" style="color:var(--ts-primary);margin-right:8px"></i>Enregistrer une collecte</h3>
+      <button class="modal-close" (click)="showModal=false"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Poubelle</label>
+          <select [(ngModel)]="form.binId">
+            <option *ngFor="let b of bins" [value]="b.id">{{ b.id }} — {{ b.location }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Type de déchet</label>
+          <select [(ngModel)]="form.wasteType">
+            <option *ngFor="let t of TYPES" [value]="t">{{ capitalize(t) }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Poids collecté (kg)</label>
+          <input type="number" [(ngModel)]="form.weightKg" min="0" step="0.1" placeholder="ex: 45.5" />
+        </div>
+        <div class="form-group">
+          <label>Opérateur</label>
+          <input type="text" [(ngModel)]="form.collectedBy" placeholder="Équipe A" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Notes (optionnel)</label>
+        <textarea [(ngModel)]="form.notes" placeholder="Observations, incidents..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showModal=false">Annuler</button>
+      <button class="btn-primary" (click)="save()" [disabled]="saving || !form.binId || !form.weightKg">
+        <i class="fa-solid fa-check"></i> {{ saving ? 'Enregistrement...' : 'Confirmer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" *ngIf="toast" [class]="toast.ok ? 'toast-success' : 'toast-error'">
+  <i [class]="toast.ok ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i>
+  {{ toast.msg }}
 </div>

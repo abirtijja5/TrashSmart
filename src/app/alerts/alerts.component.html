@@ -14,9 +14,6 @@
   </div>
 
   <div class="card" *ngIf="!loading">
-    <div class="card-header" style="padding-bottom:0">
-      <h2>Liste des alertes</h2>
-    </div>
     <div class="tabs">
       <button [class.active]="activeTab==='all'"      (click)="activeTab='all'">Toutes <span class="tab-count">{{ alerts.length }}</span></button>
       <button [class.active]="activeTab==='critical'" (click)="activeTab='critical'">Critiques <span class="tab-count danger">{{ count('critical') }}</span></button>
@@ -35,14 +32,47 @@
           <p class="af-msg">{{ a.message }}</p>
           <span class="af-time">{{ formatTime(a.createdAt) }}</span>
         </div>
-        <button class="btn-ack" *ngIf="!a.acknowledgedAt" (click)="acknowledge(a.id)">
-          <i class="fa-solid fa-check"></i> Acquitter
-        </button>
-        <span class="ack-done" *ngIf="a.acknowledgedAt">
-          <i class="fa-solid fa-circle-check"></i> Acquittée
-        </span>
+        <div class="af-actions">
+          <button class="btn-ack" *ngIf="!a.acknowledgedAt" (click)="acknowledge(a.id)">
+            <i class="fa-solid fa-check"></i> Acquitter
+          </button>
+          <span class="ack-done" *ngIf="a.acknowledgedAt">
+            <i class="fa-solid fa-circle-check"></i> Acquittée
+          </span>
+          <button class="btn-danger" (click)="openDelete(a)">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
       </div>
       <div class="empty-row" *ngIf="filtered.length === 0">Aucune alerte</div>
     </div>
   </div>
+</div>
+
+<!-- Modal : Confirmer suppression -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="showDeleteModal=false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Supprimer l'alerte</h3>
+      <button class="modal-close" (click)="showDeleteModal=false"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="color:#555;line-height:1.6">
+        Supprimer l'alerte <strong>{{ deletingAlert?.binId }}</strong> — {{ deletingAlert?.message }} ?<br>
+        <span style="color:#E24B4A;font-size:12px">Cette action est irréversible.</span>
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showDeleteModal=false">Annuler</button>
+      <button class="btn-primary" style="background:var(--ts-red)" (click)="confirmDelete()" [disabled]="saving">
+        <i class="fa-solid fa-trash"></i> {{ saving ? 'Suppression...' : 'Supprimer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" *ngIf="toast" [class]="toast.ok ? 'toast-success' : 'toast-error'">
+  <i [class]="toast.ok ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i>
+  {{ toast.msg }}
 </div>

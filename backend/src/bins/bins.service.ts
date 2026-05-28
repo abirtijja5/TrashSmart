@@ -2,12 +2,18 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Bin, BinStatus } from './entities/bin.entity';
+import { Collection } from '../collections/entities/collection.entity';
+import { Alert } from '../alerts/entities/alert.entity';
 import { CreateBinDto } from './dto/create-bin.dto';
 import { UpdateBinDto } from './dto/update-bin.dto';
 
 @Injectable()
 export class BinsService {
-  constructor(@InjectRepository(Bin) private repo: Repository<Bin>) {}
+  constructor(
+    @InjectRepository(Bin)        private repo: Repository<Bin>,
+    @InjectRepository(Collection) private colRepo: Repository<Collection>,
+    @InjectRepository(Alert)      private alertRepo: Repository<Alert>,
+  ) {}
 
   findAll(): Promise<Bin[]> {
     return this.repo.find({ order: { id: 'ASC' } });
@@ -35,6 +41,8 @@ export class BinsService {
 
   async remove(id: string): Promise<void> {
     const bin = await this.findOne(id);
+    await this.colRepo.delete({ binId: id });
+    await this.alertRepo.delete({ binId: id });
     await this.repo.remove(bin);
   }
 

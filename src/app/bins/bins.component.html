@@ -8,9 +8,8 @@
       <i class="fa-solid fa-magnifying-glass search-icon"></i>
       <input class="search-input" type="text" placeholder="Rechercher..." [(ngModel)]="searchQuery" />
     </div>
-    <button class="btn-refresh" (click)="load()">
-      <i class="fa-solid fa-rotate-right"></i> Actualiser
-    </button>
+    <button class="btn-refresh" (click)="load()"><i class="fa-solid fa-rotate-right"></i> Actualiser</button>
+    <button class="btn-new" (click)="openNew()"><i class="fa-solid fa-plus"></i> Nouvelle poubelle</button>
   </div>
 </header>
 
@@ -29,7 +28,7 @@
     <div class="table-wrap">
       <table class="bins-table">
         <thead>
-          <tr><th>ID</th><th>Emplacement</th><th>Type</th><th>Remplissage</th><th>Statut</th><th>Dernière MAJ</th><th>Action</th></tr>
+          <tr><th>ID</th><th>Emplacement</th><th>Type</th><th>Remplissage</th><th>Statut</th><th>Dernière MAJ</th><th>Actions</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let bin of filtered" [class]="'row-' + bin.status">
@@ -45,9 +44,13 @@
             <td><span [class]="'status-tag ' + getStatusClass(bin.status)">{{ getStatusLabel(bin.status) }}</span></td>
             <td class="muted">{{ fmt(bin.lastUpdate) }}</td>
             <td>
-              <button class="action-btn" [class.urgent]="bin.status !== 'normal'" [disabled]="bin.status === 'normal'">
-                <i class="fa-solid fa-truck-fast"></i> Planifier
-              </button>
+              <div class="actions-cell">
+                <button class="action-btn" [class.urgent]="bin.status !== 'normal'" (click)="openPlan(bin)">
+                  <i class="fa-solid fa-truck-fast"></i> Planifier
+                </button>
+                <button class="btn-edit" (click)="openEdit(bin)"><i class="fa-solid fa-pen"></i></button>
+                <button class="btn-danger" (click)="openDelete(bin)"><i class="fa-solid fa-trash"></i></button>
+              </div>
             </td>
           </tr>
           <tr *ngIf="filtered.length === 0">
@@ -57,4 +60,103 @@
       </table>
     </div>
   </div>
+</div>
+
+<!-- Modal : Créer / Modifier poubelle -->
+<div class="modal-overlay" *ngIf="showBinModal" (click)="showBinModal=false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingBin ? 'Modifier la poubelle' : 'Nouvelle poubelle' }}</h3>
+      <button class="modal-close" (click)="showBinModal=false"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" *ngIf="!editingBin">
+        <label>Identifiant (ex: B-009)</label>
+        <input type="text" [(ngModel)]="binForm.id" placeholder="B-009" />
+      </div>
+      <div class="form-group">
+        <label>Emplacement</label>
+        <input type="text" [(ngModel)]="binForm.location" placeholder="Rue, quartier..." />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Type de déchet</label>
+          <select [(ngModel)]="binForm.type">
+            <option *ngFor="let t of TYPES" [value]="t">{{ capitalize(t) }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Remplissage (%)</label>
+          <input type="number" [(ngModel)]="binForm.fillLevel" min="0" max="100" placeholder="0" />
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showBinModal=false">Annuler</button>
+      <button class="btn-primary" (click)="saveBin()" [disabled]="saving">
+        <i class="fa-solid fa-floppy-disk"></i> {{ saving ? 'Sauvegarde...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : Confirmer suppression -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="showDeleteModal=false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Supprimer la poubelle</h3>
+      <button class="modal-close" (click)="showDeleteModal=false"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="color:#555;line-height:1.6">
+        Confirmer la suppression de <strong>{{ deletingBin?.id }}</strong> — {{ deletingBin?.location }} ?<br>
+        <span style="color:#E24B4A;font-size:12px">Cette action est irréversible.</span>
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showDeleteModal=false">Annuler</button>
+      <button class="btn-primary" style="background:var(--ts-red)" (click)="confirmDelete()" [disabled]="saving">
+        <i class="fa-solid fa-trash"></i> {{ saving ? 'Suppression...' : 'Supprimer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : Planifier une collecte -->
+<div class="modal-overlay" *ngIf="showPlanModal" (click)="showPlanModal=false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-truck-fast" style="color:var(--ts-primary);margin-right:8px"></i>Planifier une collecte</h3>
+      <button class="modal-close" (click)="showPlanModal=false"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--ts-primary-lt);border-radius:8px;padding:10px 14px;font-size:13px;color:#0F6E56;margin-bottom:4px">
+        <strong>{{ planningBin?.id }}</strong> · {{ planningBin?.location }} · {{ capitalize(planningBin?.type) }} · <strong>{{ planningBin?.fillLevel }}%</strong>
+      </div>
+      <div class="form-group">
+        <label>Poids collecté (kg)</label>
+        <input type="number" [(ngModel)]="planForm.weightKg" min="0" step="0.1" placeholder="ex: 45.5" />
+      </div>
+      <div class="form-group">
+        <label>Opérateur</label>
+        <input type="text" [(ngModel)]="planForm.collectedBy" placeholder="Équipe A" />
+      </div>
+      <div class="form-group">
+        <label>Notes (optionnel)</label>
+        <textarea [(ngModel)]="planForm.notes" placeholder="Observations, incidents..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showPlanModal=false">Annuler</button>
+      <button class="btn-primary" (click)="savePlan()" [disabled]="saving || !planForm.weightKg">
+        <i class="fa-solid fa-check"></i> {{ saving ? 'Enregistrement...' : 'Confirmer la collecte' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" *ngIf="toast" [class]="toast.ok ? 'toast-success' : 'toast-error'">
+  <i [class]="toast.ok ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i>
+  {{ toast.msg }}
 </div>

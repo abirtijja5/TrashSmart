@@ -372,3 +372,99 @@ html, body { height: 100%; font-family: 'DM Sans', 'Segoe UI', sans-serif; font-
 
 // ── Section title ─────────────────────────────
 .section-title { font-size: 16px; font-weight: 700; color: #1A1A18; margin-bottom: 16px; }
+
+// ══════════════════════════════════════════════
+//  MODAL — Shared overlay + dialog
+// ══════════════════════════════════════════════
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 20px;
+}
+.modal {
+  background: #fff; border-radius: 14px; width: 100%; max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18); overflow: hidden;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #EEF0EE;
+  h3 { font-size: 16px; font-weight: 700; color: #1A1A18; }
+}
+.modal-close {
+  background: none; border: none; cursor: pointer; color: var(--ts-gray);
+  font-size: 18px; padding: 4px; border-radius: 6px;
+  &:hover { background: #F1F3F1; color: #333; }
+}
+.modal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+.modal-footer {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 16px 24px; border-top: 1px solid #EEF0EE;
+}
+
+// ── Form controls ─────────────────────────────
+.form-group {
+  display: flex; flex-direction: column; gap: 5px;
+  label { font-size: 12px; font-weight: 600; color: #555; text-transform: uppercase; letter-spacing: 0.4px; }
+  input, select, textarea {
+    padding: 9px 12px; border: 1.5px solid #D8DDD9; border-radius: 8px;
+    font-family: inherit; font-size: 13.5px; color: #2C2C2A;
+    background: #fff; outline: none; transition: border-color 0.15s;
+    &:focus { border-color: var(--ts-primary); box-shadow: 0 0 0 3px rgba(29,158,117,0.1); }
+    &::placeholder { color: #B0B4B0; }
+  }
+  textarea { resize: vertical; min-height: 72px; }
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+// ── Buttons ───────────────────────────────────
+.btn-primary {
+  padding: 9px 18px; border-radius: 8px; border: none; cursor: pointer;
+  background: var(--ts-primary); color: #fff; font-family: inherit;
+  font-size: 13.5px; font-weight: 600; transition: background 0.15s;
+  display: flex; align-items: center; gap: 6px;
+  &:hover { background: #178060; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+.btn-secondary {
+  padding: 9px 18px; border-radius: 8px; border: 1.5px solid #D8DDD9; cursor: pointer;
+  background: #fff; color: #555; font-family: inherit; font-size: 13.5px; font-weight: 600;
+  transition: all 0.15s;
+  &:hover { background: #F5F7F5; }
+}
+.btn-danger {
+  padding: 5px 10px; border-radius: 7px; border: 1.5px solid var(--ts-red); cursor: pointer;
+  background: #fff; color: var(--ts-red); font-family: inherit; font-size: 12px; font-weight: 600;
+  transition: all 0.15s; display: flex; align-items: center; gap: 4px;
+  &:hover { background: var(--ts-red-lt); }
+}
+.btn-edit {
+  padding: 5px 10px; border-radius: 7px; border: 1.5px solid var(--ts-blue); cursor: pointer;
+  background: #fff; color: var(--ts-blue); font-family: inherit; font-size: 12px; font-weight: 600;
+  transition: all 0.15s; display: flex; align-items: center; gap: 4px;
+  &:hover { background: var(--ts-blue-lt); }
+}
+.btn-new {
+  display: flex; align-items: center; gap: 6px; padding: 7px 15px;
+  border-radius: 8px; border: none; cursor: pointer;
+  background: var(--ts-primary); color: #fff; font-family: inherit;
+  font-size: 13px; font-weight: 600; transition: background 0.15s;
+  &:hover { background: #178060; }
+}
+.actions-cell { display: flex; gap: 6px; flex-wrap: wrap; }
+
+// ── Toast notification ────────────────────────
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: #1A2B24; color: #fff; padding: 12px 18px;
+  border-radius: 10px; font-size: 13.5px; font-weight: 500;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.22); z-index: 2000;
+  display: flex; align-items: center; gap: 8px;
+  animation: slideUp 0.2s ease;
+  &.toast-success i { color: var(--ts-primary); }
+  &.toast-error   i { color: var(--ts-red); }
+}
+@keyframes slideUp {
+  from { opacity:0; transform: translateY(12px); }
+  to   { opacity:1; transform: translateY(0); }
+}

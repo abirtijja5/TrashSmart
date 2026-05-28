@@ -33,7 +33,15 @@ export class AuthService {
   }
 
   get isLoggedIn(): boolean {
-    return !!this.accessToken;
+    const token = this.accessToken;
+    if (!token) return false;
+    // Vérifie que le token n'est pas expiré en lisant le payload localement
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.exp * 1000 > Date.now();
+    } catch {
+      return false;
+    }
   }
 
   login(email: string, password: string): Observable<AuthTokens> {
@@ -64,7 +72,19 @@ export class AuthService {
   private storeTokens(tokens: AuthTokens): void {
     localStorage.setItem(this.ACCESS_KEY, tokens.accessToken);
     localStorage.setItem(this.REFRESH_KEY, tokens.refreshToken);
-    this.tryLoadUser();
+    // Décode le payload localement pour éviter un appel réseau inutile
+    this.loadUserFromToken(tokens.accessToken);
+  }
+
+  private loadUserFromToken(token: string): void {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      // Le payload contient sub/email/role — on les utilise directement
+      this.currentUser$.next({ id: payload.sub, email: payload.email, name: payload.name ?? payload.email, role: payload.role });
+    } catch {
+      // Token malformé — on efface
+      this.clearTokens();
+    }
   }
 
   private clearTokens(): void {
@@ -74,8 +94,22 @@ export class AuthService {
   }
 
   private tryLoadUser(): void {
-    if (this.accessToken) {
-      this.me().subscribe({ error: () => this.clearTokens() });
+    const token = this.accessToken;
+    if (!token) return;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expired = payload.exp * 1000 < Date.now();
+      if (!expired) {
+        // Token encore valide : on charge l'utilisateur localement, sans appel réseau
+        this.currentUser$.next({ id: payload.sub, email: payload.email, name: payload.name ?? payload.email, role: payload.role });
+      } else {
+        // Token expiré : on utilise le refresh token pour en avoir un nouveau
+        this.refresh().subscribe({
+          error: () => this.clearTokens(),
+        });
+      }
+    } catch {
+      this.clearTokens();
     }
   }
 }

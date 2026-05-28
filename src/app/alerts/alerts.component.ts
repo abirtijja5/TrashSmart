@@ -7,6 +7,10 @@ export class AlertsComponent implements OnInit {
   alerts: any[] = [];
   loading = true;
   activeTab: 'all' | 'critical' | 'warning' = 'all';
+  deletingAlert: any = null;
+  showDeleteModal = false;
+  saving = false;
+  toast: { msg: string; ok: boolean } | null = null;
 
   constructor(private http: HttpClient) {}
   ngOnInit() { this.load(); }
@@ -28,6 +32,21 @@ export class AlertsComponent implements OnInit {
 
   acknowledge(id: number) {
     this.http.patch(`${environment.apiUrl}/alerts/${id}/acknowledge`, {}).subscribe(() => this.load());
+  }
+
+  openDelete(alert: any) { this.deletingAlert = alert; this.showDeleteModal = true; }
+
+  confirmDelete() {
+    this.saving = true;
+    this.http.delete(`${environment.apiUrl}/alerts/${this.deletingAlert.id}`).subscribe({
+      next: () => { this.showDeleteModal = false; this.saving = false; this.load(); this.notify('Alerte supprimée', true); },
+      error: () => { this.saving = false; this.notify('Erreur lors de la suppression', false); },
+    });
+  }
+
+  notify(msg: string, ok: boolean) {
+    this.toast = { msg, ok };
+    setTimeout(() => this.toast = null, 3000);
   }
 
   formatTime(d: any) {

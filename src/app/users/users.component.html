@@ -5,6 +5,7 @@
   </div>
   <div class="header-right">
     <button class="btn-refresh" (click)="load()"><i class="fa-solid fa-rotate-right"></i> Actualiser</button>
+    <button class="btn-new" (click)="openNew()"><i class="fa-solid fa-user-plus"></i> Nouvel utilisateur</button>
   </div>
 </header>
 
@@ -17,7 +18,7 @@
     <div class="table-wrap">
       <table class="bins-table">
         <thead>
-          <tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th>Statut</th><th>Créé le</th></tr>
+          <tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th>Statut</th><th>Créé le</th><th>Actions</th></tr>
         </thead>
         <tbody>
           <tr *ngFor="let u of users">
@@ -35,12 +36,84 @@
               </span>
             </td>
             <td class="muted">{{ fmtDate(u.createdAt) }}</td>
+            <td>
+              <div class="actions-cell">
+                <button class="btn-edit" (click)="openEdit(u)"><i class="fa-solid fa-pen"></i> Modifier</button>
+                <button class="btn-danger" (click)="openDelete(u)"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
           </tr>
           <tr *ngIf="users.length === 0">
-            <td colspan="5" class="empty-row">Aucun utilisateur</td>
+            <td colspan="6" class="empty-row">Aucun utilisateur</td>
           </tr>
         </tbody>
       </table>
     </div>
   </div>
+</div>
+
+<!-- Modal : Créer / Modifier utilisateur -->
+<div class="modal-overlay" *ngIf="showUserModal" (click)="showUserModal=false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingUser ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' }}</h3>
+      <button class="modal-close" (click)="showUserModal=false"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom complet</label>
+          <input type="text" [(ngModel)]="form.name" placeholder="Jean Dupont" />
+        </div>
+        <div class="form-group">
+          <label>Rôle</label>
+          <select [(ngModel)]="form.role">
+            <option *ngFor="let r of ROLES" [value]="r.value">{{ r.label }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Adresse email</label>
+        <input type="email" [(ngModel)]="form.email" placeholder="jean@trashsmart.fr" />
+      </div>
+      <div class="form-group">
+        <label>Mot de passe {{ editingUser ? '(laisser vide pour ne pas changer)' : '' }}</label>
+        <input type="password" [(ngModel)]="form.password" placeholder="••••••••" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showUserModal=false">Annuler</button>
+      <button class="btn-primary" (click)="saveUser()" [disabled]="saving">
+        <i class="fa-solid fa-floppy-disk"></i> {{ saving ? 'Sauvegarde...' : 'Enregistrer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : Confirmer suppression -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="showDeleteModal=false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Supprimer l'utilisateur</h3>
+      <button class="modal-close" (click)="showDeleteModal=false"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="color:#555;line-height:1.6">
+        Supprimer le compte de <strong>{{ deletingUser?.name }}</strong> ({{ deletingUser?.email }}) ?<br>
+        <span style="color:#E24B4A;font-size:12px">Cette action est irréversible.</span>
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showDeleteModal=false">Annuler</button>
+      <button class="btn-primary" style="background:var(--ts-red)" (click)="confirmDelete()" [disabled]="saving">
+        <i class="fa-solid fa-trash"></i> {{ saving ? 'Suppression...' : 'Supprimer' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" *ngIf="toast" [class]="toast.ok ? 'toast-success' : 'toast-error'">
+  <i [class]="toast.ok ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i>
+  {{ toast.msg }}
 </div>
