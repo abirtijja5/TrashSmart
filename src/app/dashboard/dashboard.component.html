@@ -191,7 +191,7 @@
             <td><span [class]="'status-tag ' + getStatusClass(bin.status)">{{ getStatusLabel(bin.status) }}</span></td>
             <td class="muted">{{ formatLastUpdate(bin.lastUpdate) }}</td>
             <td>
-              <button class="action-btn" [class.urgent]="bin.status !== 'normal'" [disabled]="bin.status === 'normal'">
+              <button class="action-btn" [class.urgent]="bin.status !== 'normal'" (click)="openPlan(bin)">
                 <i class="fa-solid fa-truck-fast"></i> Planifier
               </button>
             </td>
@@ -204,4 +204,43 @@
     </div>
   </section>
 
+</div>
+
+<!-- Modal : Planifier une collecte (Dashboard) -->
+<div class="modal-overlay" *ngIf="showPlanModal" (click)="showPlanModal=false">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-truck-fast" style="color:var(--ts-primary);margin-right:8px"></i>Planifier une collecte</h3>
+      <button class="modal-close" (click)="showPlanModal=false"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--ts-primary-lt);border-radius:8px;padding:10px 14px;font-size:13px;color:#0F6E56;margin-bottom:4px">
+        <strong>{{ planningBin?.id }}</strong> · {{ planningBin?.location }} · {{ planningBin?.type }} · <strong>{{ planningBin?.fillLevel }}%</strong>
+      </div>
+      <div class="form-group">
+        <label>Poids collecté (kg)</label>
+        <input type="number" [(ngModel)]="planForm.weightKg" min="0" step="0.1" placeholder="ex: 45.5" />
+      </div>
+      <div class="form-group">
+        <label>Opérateur</label>
+        <input type="text" [(ngModel)]="planForm.collectedBy" placeholder="Équipe A" />
+      </div>
+      <div class="form-group">
+        <label>Notes (optionnel)</label>
+        <textarea [(ngModel)]="planForm.notes" placeholder="Observations..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showPlanModal=false">Annuler</button>
+      <button class="btn-primary" (click)="savePlan()" [disabled]="saving || !planForm.weightKg">
+        <i class="fa-solid fa-check"></i> {{ saving ? 'Enregistrement...' : 'Confirmer la collecte' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" *ngIf="toast" [class]="toast.ok ? 'toast-success' : 'toast-error'">
+  <i [class]="toast.ok ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i>
+  {{ toast.msg }}
 </div>

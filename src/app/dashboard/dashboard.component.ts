@@ -1,11 +1,13 @@
 import {
   Component, OnInit, OnDestroy, ViewChild, ElementRef, AfterViewInit,
 } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Chart, registerables } from 'chart.js';
 import { WasteService } from '../services/waste.service';
 import { AuthService } from '../auth/auth.service';
 import { WasteStats, WeeklyData, EfficiencyData, BinStatus, AlertEvent } from '../models/waste.model';
 import { forkJoin, interval, Subscription } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 Chart.register(...registerables);
 
@@ -36,12 +38,54 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private refreshSub?: Subscription;
 
+  // Modal planifier
+  showPlanModal = false;
+  planningBin:  any = null;
+  planForm:     any = { weightKg: '', collectedBy: '', notes: '' };
+  saving        = false;
+  toast: { msg: string; ok: boolean } | null = null;
+
+  readonly TYPES = ['plastique','verre','papier','metal','organique'];
+
   constructor(
     private wasteService: WasteService,
     private authService: AuthService,
+    private http: HttpClient,
   ) {}
 
   logout(): void { this.authService.logout(); }
+
+  openPlan(bin: any): void {
+    this.planningBin = bin;
+    this.planForm = { weightKg: '', collectedBy: '', notes: '' };
+    this.showPlanModal = true;
+  }
+
+  savePlan(): void {
+    if (!this.planForm.weightKg) return;
+    this.saving = true;
+    this.http.post(`${environment.apiUrl}/collections`, {
+      binId:       this.planningBin.id,
+      wasteType:   this.planningBin.type,
+      weightKg:    +this.planForm.weightKg,
+      collectedBy: this.planForm.collectedBy || 'Équipe A',
+      notes:       this.planForm.notes,
+      collectedAt: new Date().toISOString(),
+    }).subscribe({
+      next: () => {
+        this.showPlanModal = false;
+        this.saving = false;
+        this.loadData();
+        this.notify('Collecte enregistrée ✓', true);
+      },
+      error: () => { this.saving = false; this.notify('Erreur lors de l\'enregistrement', false); },
+    });
+  }
+
+  notify(msg: string, ok: boolean): void {
+    this.toast = { msg, ok };
+    setTimeout(() => this.toast = null, 3000);
+  }
 
   get filteredBins(): BinStatus[] {
     let bins = this.binStatuses;

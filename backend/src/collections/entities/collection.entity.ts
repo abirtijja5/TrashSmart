@@ -1,7 +1,7 @@
 import {
-  Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn,
+  Entity, PrimaryGeneratedColumn, Column, CreateDateColumn,
 } from 'typeorm';
-import { Bin, WasteType } from '../../bins/entities/bin.entity';
+import { WasteType } from '../../bins/entities/bin.entity';
 
 @Entity('collections')
 export class Collection {
@@ -10,10 +10,6 @@ export class Collection {
 
   @Column({ name: 'bin_id' })
   binId: string;
-
-  @ManyToOne(() => Bin, { onDelete: 'SET NULL', nullable: true, eager: false })
-  @JoinColumn({ name: 'bin_id' })
-  bin: Bin;
 
   @Column({ type: 'text' })
   wasteType: WasteType;
