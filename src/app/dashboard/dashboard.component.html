@@ -1,0 +1,213 @@
+<div class="page-body dashboard-body">
+  <!-- Header -->
+  <div class="top-header">
+    <div class="header-left">
+      <h2 class="section-title">Tableau de bord</h2>
+      <span class="date-chip"><i class="fa-solid fa-calendar-days"></i> {{ formattedDate }}</span>
+    </div>
+    <div class="header-right">
+      <div class="search-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Rechercher une poubelle…" [(ngModel)]="searchQuery" />
+      </div>
+      <button class="btn-notif"><i class="fa-solid fa-bell"></i>
+        <span class="notif-dot" *ngIf="alerts.length > 0"></span>
+      </button>
+      <button class="btn-refresh" (click)="loadData()" [disabled]="loading">
+        <i class="fa-solid fa-arrows-rotate" [class.spin]="loading"></i>
+        Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <span>Chargement des données…</span>
+  </div>
+
+  <ng-container *ngIf="!loading && stats">
+    <!-- KPI Row -->
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap teal"><i class="fa-solid fa-weight-scale"></i></div>
+        <div class="kpi-content">
+          <span class="kpi-label">Total collecté</span>
+          <span class="kpi-value">{{ stats.totalCollected | number:'1.1-1' }} kg</span>
+          <div class="kpi-bar"><div class="kpi-bar-fill teal" [style.width.%]="(stats.totalCollected / 5000) * 100 | min:100"></div></div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap green"><i class="fa-solid fa-circle-check"></i></div>
+        <div class="kpi-content">
+          <span class="kpi-label">Efficacité tri</span>
+          <span class="kpi-value">{{ stats.sortingEfficiency | number:'1.1-1' }}%</span>
+          <div class="kpi-bar"><div class="kpi-bar-fill green" [style.width.%]="stats.sortingEfficiency"></div></div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap blue"><i class="fa-solid fa-location-dot"></i></div>
+        <div class="kpi-content">
+          <span class="kpi-label">Poubelles actives</span>
+          <span class="kpi-value">{{ stats.activeBins }}</span>
+          <div class="kpi-bar"><div class="kpi-bar-fill blue" [style.width.%]="(stats.activeBins / (stats.activeBins + stats.fullBins || 1)) * 100"></div></div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap amber"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <div class="kpi-content">
+          <span class="kpi-label">Alertes actives</span>
+          <span class="kpi-value">{{ stats.alertsCount }}</span>
+          <div class="kpi-bar"><div class="kpi-bar-fill amber" [style.width.%]="(stats.alertsCount / 20) * 100 | min:100"></div></div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon-wrap coral"><i class="fa-solid fa-leaf"></i></div>
+        <div class="kpi-content">
+          <span class="kpi-label">CO₂ économisé</span>
+          <span class="kpi-value">{{ stats.co2Saved | number:'1.1-1' }} kg</span>
+          <div class="kpi-bar"><div class="kpi-bar-fill coral" [style.width.%]="(stats.co2Saved / 1000) * 100 | min:100"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="charts-row">
+      <!-- Donut Chart -->
+      <div class="card donut-card">
+        <div class="card-header">
+          <span class="card-title"><i class="fa-solid fa-chart-pie"></i> Répartition par type</span>
+        </div>
+        <div class="donut-wrap">
+          <div class="donut-canvas-wrap">
+            <canvas #donutCanvas></canvas>
+            <div class="donut-center">
+              <span class="donut-total">{{ stats.totalCollected | number:'1.0-0' }}</span>
+              <span class="donut-unit">kg total</span>
+            </div>
+          </div>
+          <div class="donut-legend">
+            <div class="legend-item" *ngFor="let t of stats.wasteTypes">
+              <span class="legend-dot" [style.background]="t.color"></span>
+              <span class="legend-label">{{ capitalize(t.type) }}</span>
+              <span class="legend-pct">{{ t.percent | number:'1.0-1' }}%</span>
+              <span class="legend-kg">{{ t.kg | number:'1.1-1' }} kg</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bar Chart -->
+      <div class="card bar-card">
+        <div class="card-header">
+          <span class="card-title"><i class="fa-solid fa-chart-bar"></i> Collectes hebdomadaires</span>
+        </div>
+        <div class="chart-area">
+          <canvas #barCanvas></canvas>
+        </div>
+        <div class="bar-legend">
+          <span class="bl-item"><span class="bl-dot" style="background:#4B9EF5"></span>Plastique</span>
+          <span class="bl-item"><span class="bl-dot" style="background:#1D9E75"></span>Verre</span>
+          <span class="bl-item"><span class="bl-dot" style="background:#F5A623"></span>Papier</span>
+          <span class="bl-item"><span class="bl-dot" style="background:#9B59B6"></span>Métal</span>
+          <span class="bl-item"><span class="bl-dot" style="background:#E87E4D"></span>Organique</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="charts-row-2">
+      <!-- Line Chart -->
+      <div class="card line-card">
+        <div class="card-header">
+          <span class="card-title"><i class="fa-solid fa-chart-line"></i> Tendance efficacité (30j)</span>
+        </div>
+        <div class="chart-area">
+          <canvas #lineCanvas></canvas>
+        </div>
+      </div>
+
+      <!-- Alerts feed -->
+      <div class="card alerts-card">
+        <div class="card-header">
+          <span class="card-title"><i class="fa-solid fa-bell"></i> Alertes récentes</span>
+          <span class="card-badge danger" *ngIf="alerts.length > 0">{{ alerts.length }}</span>
+        </div>
+        <div class="alerts-list">
+          <div *ngIf="alerts.length === 0" class="empty-state">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>Aucune alerte active</span>
+          </div>
+          <div *ngFor="let alert of alerts" class="alert-row" [class.critical]="alert.severity === 'critical'" [class.warning]="alert.severity === 'warning'">
+            <div class="alert-dot"></div>
+            <div class="alert-body">
+              <div class="alert-top">
+                <span class="alert-bin"><i class="fa-solid fa-trash-can"></i>{{ alert.binId }}</span>
+                <span class="alert-loc"><i class="fa-solid fa-location-dot"></i>{{ alert.location }}</span>
+              </div>
+              <div class="alert-msg">{{ alert.message }}</div>
+              <div class="alert-time">{{ formatAlertTime(alert.createdAt) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bins Table -->
+    <div class="card bins-card">
+      <div class="card-header">
+        <span class="card-title"><i class="fa-solid fa-trash-can"></i> État des poubelles</span>
+        <div class="tabs">
+          <button class="tab" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
+            Toutes <span class="tab-count">{{ binStatuses.length }}</span>
+          </button>
+          <button class="tab" [class.active]="activeTab === 'critical'" (click)="activeTab = 'critical'">
+            Critiques <span class="tab-count danger">{{ countByStatus('critical') }}</span>
+          </button>
+          <button class="tab" [class.active]="activeTab === 'warning'" (click)="activeTab = 'warning'">
+            Avertissements <span class="tab-count warning">{{ countByStatus('warning') }}</span>
+          </button>
+          <button class="tab" [class.active]="activeTab === 'normal'" (click)="activeTab = 'normal'">
+            Normales <span class="tab-count">{{ countByStatus('normal') }}</span>
+          </button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="bins-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Emplacement</th>
+              <th>Type</th>
+              <th>Remplissage</th>
+              <th>Statut</th>
+              <th>Dernière MAJ</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="filteredBins.length === 0" class="empty-row">
+              <td colspan="7"><div class="empty-state"><i class="fa-solid fa-inbox"></i><span>Aucune poubelle trouvée</span></div></td>
+            </tr>
+            <tr *ngFor="let bin of filteredBins" [class.critical]="bin.status === 'critical'" [class.warning]="bin.status === 'warning'">
+              <td><span class="bin-id">{{ bin.id }}</span></td>
+              <td>{{ bin.location }}</td>
+              <td><span class="type-tag">{{ capitalize(bin.type) }}</span></td>
+              <td>
+                <div class="fill-row">
+                  <div class="fill-track">
+                    <div class="fill-thumb" [style.width.%]="bin.fillLevel" [style.background]="getFillColor(bin.fillLevel)"></div>
+                  </div>
+                  <span class="fill-pct">{{ bin.fillLevel }}%</span>
+                </div>
+              </td>
+              <td><span class="status-tag" [class]="getStatusClass(bin.status)">{{ getStatusLabel(bin.status) }}</span></td>
+              <td><span class="muted">{{ formatLastUpdate(bin.lastUpdate) }}</span></td>
+              <td><button class="action-btn"><i class="fa-solid fa-eye"></i> Voir</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+</div>

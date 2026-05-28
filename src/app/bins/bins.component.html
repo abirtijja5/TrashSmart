@@ -1,0 +1,88 @@
+<div class="page-body">
+  <!-- Header -->
+  <div class="top-header">
+    <div class="header-left">
+      <h2 class="section-title">Poubelles connectées</h2>
+      <span class="header-sub">{{ bins.length }} poubelle(s) enregistrée(s)</span>
+    </div>
+    <div class="header-right">
+      <div class="search-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Rechercher (ID, emplacement)…" [(ngModel)]="searchQuery" />
+      </div>
+      <button class="btn-refresh" (click)="load()" [disabled]="loading">
+        <i class="fa-solid fa-arrows-rotate" [class.spin]="loading"></i>
+        Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <span>Chargement…</span>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <div class="card bins-card">
+      <div class="card-header">
+        <span class="card-title"><i class="fa-solid fa-trash-can"></i> Liste des poubelles</span>
+        <div class="tabs">
+          <button class="tab" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
+            Toutes <span class="tab-count">{{ bins.length }}</span>
+          </button>
+          <button class="tab" [class.active]="activeTab === 'critical'" (click)="activeTab = 'critical'">
+            Critiques <span class="tab-count danger">{{ count('critical') }}</span>
+          </button>
+          <button class="tab" [class.active]="activeTab === 'warning'" (click)="activeTab = 'warning'">
+            Avertissements <span class="tab-count warning">{{ count('warning') }}</span>
+          </button>
+          <button class="tab" [class.active]="activeTab === 'normal'" (click)="activeTab = 'normal'">
+            Normales <span class="tab-count">{{ count('normal') }}</span>
+          </button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="bins-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Emplacement</th>
+              <th>Type</th>
+              <th>Remplissage</th>
+              <th>Statut</th>
+              <th>Dernière MAJ</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="filtered.length === 0" class="empty-row">
+              <td colspan="7">
+                <div class="empty-state">
+                  <i class="fa-solid fa-inbox"></i>
+                  <span>Aucune poubelle trouvée</span>
+                </div>
+              </td>
+            </tr>
+            <tr *ngFor="let bin of filtered" [class.critical]="bin.status === 'critical'" [class.warning]="bin.status === 'warning'">
+              <td><span class="bin-id">{{ bin.id }}</span></td>
+              <td>{{ bin.location }}</td>
+              <td><span class="type-tag">{{ capitalize(bin.type) }}</span></td>
+              <td>
+                <div class="fill-row">
+                  <div class="fill-track">
+                    <div class="fill-thumb" [style.width.%]="bin.fillLevel" [style.background]="getFillColor(bin.fillLevel)"></div>
+                  </div>
+                  <span class="fill-pct">{{ bin.fillLevel }}%</span>
+                </div>
+              </td>
+              <td><span class="status-tag" [class]="getStatusClass(bin.status)">{{ getStatusLabel(bin.status) }}</span></td>
+              <td><span class="muted">{{ fmt(bin.lastUpdate) }}</span></td>
+              <td><button class="action-btn"><i class="fa-solid fa-eye"></i> Voir</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+</div>

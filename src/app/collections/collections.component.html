@@ -1,0 +1,61 @@
+<div class="page-body">
+  <!-- Header -->
+  <div class="top-header">
+    <div class="header-left">
+      <h2 class="section-title">Collectes</h2>
+      <span class="header-sub">{{ collections.length }} collecte(s) · {{ totalKg }} kg total</span>
+    </div>
+    <div class="header-right">
+      <button class="btn-refresh" (click)="load()" [disabled]="loading">
+        <i class="fa-solid fa-arrows-rotate" [class.spin]="loading"></i>
+        Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <span>Chargement…</span>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fa-solid fa-truck"></i> Historique des collectes</span>
+      </div>
+      <div class="table-wrap">
+        <table class="bins-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Poubelle</th>
+              <th>Type</th>
+              <th>Poids (kg)</th>
+              <th>Opérateur</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="collections.length === 0" class="empty-row">
+              <td colspan="6">
+                <div class="empty-state">
+                  <i class="fa-solid fa-inbox"></i>
+                  <span>Aucune collecte enregistrée</span>
+                </div>
+              </td>
+            </tr>
+            <tr *ngFor="let c of collections">
+              <td><span class="muted">{{ fmtDate(c.collectedAt) }}</span></td>
+              <td><span class="bin-id">{{ c.binId }}</span></td>
+              <td><span class="type-tag">{{ capitalize(c.wasteType || c.type || '') }}</span></td>
+              <td><strong>{{ c.weightKg | number:'1.1-1' }}</strong></td>
+              <td>{{ c.collectedBy || '—' }}</td>
+              <td class="muted">{{ c.notes || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+</div>

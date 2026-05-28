@@ -1,0 +1,65 @@
+<div class="page-body">
+  <!-- Header -->
+  <div class="top-header">
+    <div class="header-left">
+      <h2 class="section-title">Alertes</h2>
+      <span class="header-sub">{{ alerts.length }} alerte(s) au total</span>
+    </div>
+    <div class="header-right">
+      <button class="btn-refresh" (click)="load()" [disabled]="loading">
+        <i class="fa-solid fa-arrows-rotate" [class.spin]="loading"></i>
+        Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <span>Chargement…</span>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fa-solid fa-bell"></i> Liste des alertes</span>
+        <div class="tabs">
+          <button class="tab" [class.active]="activeTab === 'all'" (click)="activeTab = 'all'">
+            Toutes <span class="tab-count">{{ alerts.length }}</span>
+          </button>
+          <button class="tab" [class.active]="activeTab === 'critical'" (click)="activeTab = 'critical'">
+            Critiques <span class="tab-count danger">{{ count('critical') }}</span>
+          </button>
+          <button class="tab" [class.active]="activeTab === 'warning'" (click)="activeTab = 'warning'">
+            Avertissements <span class="tab-count warning">{{ count('warning') }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="alerts-full-list">
+        <div *ngIf="filtered.length === 0" class="empty-state" style="padding:32px 0; justify-content:center;">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>Aucune alerte</span>
+        </div>
+        <div *ngFor="let alert of filtered" class="alert-full-row" [class.a-critical]="alert.severity === 'critical'" [class.a-warning]="alert.severity === 'warning'">
+          <div class="af-dot"></div>
+          <div class="af-body">
+            <div class="af-top">
+              <span class="af-bin"><i class="fa-solid fa-trash-can"></i>{{ alert.binId }}</span>
+              <span class="af-loc"><i class="fa-solid fa-location-dot"></i>{{ alert.location }}</span>
+              <span class="af-sev" [class]="alert.severity">{{ alert.severity === 'critical' ? 'Critique' : 'Avertissement' }}</span>
+            </div>
+            <div class="af-msg">{{ alert.message }}</div>
+            <div class="af-time">{{ formatTime(alert.createdAt) }}</div>
+          </div>
+          <button class="btn-ack" *ngIf="!alert.acknowledgedAt" (click)="acknowledge(alert.id)">
+            <i class="fa-solid fa-check"></i> Acquitter
+          </button>
+          <span class="ack-done" *ngIf="alert.acknowledgedAt">
+            <i class="fa-solid fa-circle-check"></i> Acquitté
+          </span>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

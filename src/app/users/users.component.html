@@ -1,0 +1,68 @@
+<div class="page-body">
+  <!-- Header -->
+  <div class="top-header">
+    <div class="header-left">
+      <h2 class="section-title">Utilisateurs</h2>
+      <span class="header-sub">{{ users.length }} utilisateur(s)</span>
+    </div>
+    <div class="header-right">
+      <button class="btn-refresh" (click)="load()" [disabled]="loading">
+        <i class="fa-solid fa-arrows-rotate" [class.spin]="loading"></i>
+        Actualiser
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <span>Chargement…</span>
+  </div>
+
+  <ng-container *ngIf="!loading">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fa-solid fa-users"></i> Gestion des utilisateurs</span>
+      </div>
+      <div class="table-wrap">
+        <table class="bins-table">
+          <thead>
+            <tr>
+              <th>Utilisateur</th>
+              <th>Email</th>
+              <th>Rôle</th>
+              <th>Statut</th>
+              <th>Créé le</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="users.length === 0" class="empty-row">
+              <td colspan="5">
+                <div class="empty-state">
+                  <i class="fa-solid fa-inbox"></i>
+                  <span>Aucun utilisateur trouvé</span>
+                </div>
+              </td>
+            </tr>
+            <tr *ngFor="let user of users">
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar">{{ initials(user.name) }}</div>
+                  <span>{{ user.name }}</span>
+                </div>
+              </td>
+              <td class="muted">{{ user.email }}</td>
+              <td><span class="role-tag" [class]="getRoleClass(user.role)">{{ getRoleLabel(user.role) }}</span></td>
+              <td>
+                <span class="status-tag" [class]="user.isActive ? 'badge-success' : 'badge-danger'">
+                  {{ user.isActive ? 'Actif' : 'Inactif' }}
+                </span>
+              </td>
+              <td><span class="muted">{{ fmtDate(user.createdAt) }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+</div>

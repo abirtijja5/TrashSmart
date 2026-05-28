@@ -1,0 +1,58 @@
+<div class="page-body">
+  <!-- Header -->
+  <div class="top-header">
+    <div class="header-left">
+      <h2 class="section-title">Analytiques</h2>
+      <span class="header-sub">Vue d'ensemble des performances</span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loading-spinner"></div>
+    <span>Chargement…</span>
+  </div>
+
+  <ng-container *ngIf="!loading && stats">
+    <!-- KPI Cards -->
+    <div class="analytics-kpi">
+      <div class="a-kpi-card">
+        <span class="a-kpi-label">Total collecté</span>
+        <span class="a-kpi-value teal">{{ stats.totalCollected | number:'1.1-1' }} kg</span>
+      </div>
+      <div class="a-kpi-card">
+        <span class="a-kpi-label">Efficacité de tri</span>
+        <span class="a-kpi-value green">{{ stats.sortingEfficiency | number:'1.1-1' }}%</span>
+      </div>
+      <div class="a-kpi-card">
+        <span class="a-kpi-label">CO₂ économisé</span>
+        <span class="a-kpi-value teal">{{ stats.co2Saved | number:'1.1-1' }} kg</span>
+      </div>
+      <div class="a-kpi-card">
+        <span class="a-kpi-label">Alertes actives</span>
+        <span class="a-kpi-value red">{{ stats.alertsCount }}</span>
+      </div>
+    </div>
+
+    <!-- Waste types bars -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><i class="fa-solid fa-chart-bar"></i> Répartition par type de déchet</span>
+      </div>
+      <div style="padding: 20px 24px;">
+        <div class="type-bars">
+          <div class="type-bar-row" *ngFor="let t of byType">
+            <div class="type-label">
+              <span class="dot-sm" [style.background]="t.color"></span>
+              <span>{{ capitalize(t.type) }}</span>
+            </div>
+            <div class="type-track">
+              <div class="type-fill" [style.width.%]="t.percent" [style.background]="t.color"></div>
+            </div>
+            <span class="type-stats">{{ t.kg | number:'1.1-1' }} kg · {{ t.percent | number:'1.0-1' }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
