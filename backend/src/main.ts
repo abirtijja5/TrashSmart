@@ -11,8 +11,11 @@ async function bootstrap() {
 
   app.use(helmet());
 
+  const isDev = config.get<string>('NODE_ENV') !== 'production';
   app.enableCors({
-    origin: config.get<string>('FRONTEND_URL', 'http://localhost:4200'),
+    origin: isDev
+      ? (_origin: string, cb: (e: null, ok: boolean) => void) => cb(null, true)
+      : config.get<string>('FRONTEND_URL', 'http://localhost:4200'),
     credentials: true,
   });
 
