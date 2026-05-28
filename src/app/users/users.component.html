@@ -1,0 +1,46 @@
+<header class="top-header">
+  <div class="header-left">
+    <h1 class="page-title">Utilisateurs</h1>
+    <span class="refresh-info">{{ users.length }} comptes</span>
+  </div>
+  <div class="header-right">
+    <button class="btn-refresh" (click)="load()"><i class="fa-solid fa-rotate-right"></i> Actualiser</button>
+  </div>
+</header>
+
+<div class="page-body">
+  <div class="loading-overlay" *ngIf="loading">
+    <i class="fa-solid fa-spinner fa-spin"></i><span>Chargement…</span>
+  </div>
+
+  <div class="card" *ngIf="!loading">
+    <div class="table-wrap">
+      <table class="bins-table">
+        <thead>
+          <tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th>Statut</th><th>Créé le</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of users">
+            <td>
+              <div class="user-cell">
+                <div class="user-avatar">{{ initials(u.name) }}</div>
+                <span>{{ u.name }}</span>
+              </div>
+            </td>
+            <td class="muted">{{ u.email }}</td>
+            <td><span [class]="'role-tag ' + getRoleClass(u.role)">{{ getRoleLabel(u.role) }}</span></td>
+            <td>
+              <span class="status-tag" [class]="u.isActive ? 'badge-success' : 'badge-danger'">
+                {{ u.isActive ? 'Actif' : 'Inactif' }}
+              </span>
+            </td>
+            <td class="muted">{{ fmtDate(u.createdAt) }}</td>
+          </tr>
+          <tr *ngIf="users.length === 0">
+            <td colspan="5" class="empty-row">Aucun utilisateur</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

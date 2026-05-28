@@ -1,0 +1,51 @@
+<header class="top-header">
+  <div class="header-left">
+    <h1 class="page-title">Analytiques</h1>
+    <span class="refresh-info">Vue globale des performances</span>
+  </div>
+</header>
+
+<div class="page-body">
+  <div class="loading-overlay" *ngIf="loading">
+    <i class="fa-solid fa-spinner fa-spin"></i><span>Chargement…</span>
+  </div>
+
+  <div *ngIf="!loading && stats">
+    <!-- KPIs -->
+    <div class="analytics-kpi">
+      <div class="a-kpi-card">
+        <span class="a-kpi-label">Total collecté</span>
+        <span class="a-kpi-value">{{ stats.totalCollected | number:'1.0-0':'fr' }} kg</span>
+      </div>
+      <div class="a-kpi-card">
+        <span class="a-kpi-label">Efficacité tri</span>
+        <span class="a-kpi-value teal">{{ stats.sortingEfficiency }}%</span>
+      </div>
+      <div class="a-kpi-card">
+        <span class="a-kpi-label">CO₂ économisé</span>
+        <span class="a-kpi-value green">{{ stats.co2Saved | number:'1.0-0':'fr' }} kg</span>
+      </div>
+      <div class="a-kpi-card">
+        <span class="a-kpi-label">Alertes actives</span>
+        <span class="a-kpi-value red">{{ stats.alertsCount }}</span>
+      </div>
+    </div>
+
+    <!-- By type -->
+    <div class="card" style="padding:20px">
+      <h2 class="section-title">Répartition par type de déchet</h2>
+      <div class="type-bars">
+        <div class="type-bar-row" *ngFor="let w of byType">
+          <div class="type-label">
+            <span class="dot-sm" [style.background]="w.color"></span>
+            <span>{{ capitalize(w.type) }}</span>
+          </div>
+          <div class="type-track">
+            <div class="type-fill" [style.width.%]="w.percent" [style.background]="w.color"></div>
+          </div>
+          <span class="type-stats">{{ w.kg | number:'1.0-0':'fr' }} kg · {{ w.percent }}%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

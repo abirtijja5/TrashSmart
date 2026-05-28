@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Angular cache & build
+.angular/
+dist/
+
+# Environment (secrets)
+backend/.env
+*.env
+
+# SQLite database
+backend/*.db
+backend/*.db-shm
+backend/*.db-wal
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log

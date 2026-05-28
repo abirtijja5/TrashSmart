@@ -1,0 +1,207 @@
+<!-- Header -->
+<header class="top-header">
+  <div class="header-left">
+    <h1 class="page-title">Tableau de bord</h1>
+    <span class="refresh-info">Mis à jour à {{ lastRefresh | date:'HH:mm:ss' }}</span>
+  </div>
+  <div class="header-right">
+    <div class="search-wrap">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input class="search-input" type="text" placeholder="Rechercher une poubelle..." [(ngModel)]="searchQuery" />
+    </div>
+    <button class="btn-notif">
+      <i class="fa-solid fa-bell"></i>
+      <span class="notif-dot" *ngIf="alerts.length"></span>
+    </button>
+    <button class="btn-refresh" (click)="loadData()">
+      <i class="fa-solid fa-rotate-right"></i> Actualiser
+    </button>
+    <div class="date-chip">{{ lastRefresh | date:'EEEE d MMMM yyyy':'':'fr' }}</div>
+  </div>
+</header>
+
+<!-- Loading -->
+<div class="loading-overlay" *ngIf="loading">
+  <i class="fa-solid fa-spinner fa-spin"></i><span>Chargement…</span>
+</div>
+
+<div class="dashboard-body" *ngIf="!loading && stats">
+
+  <!-- KPI CARDS -->
+  <section class="kpi-row">
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap teal"><i class="fa-solid fa-weight-scale"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-label">Déchets collectés</span>
+        <span class="kpi-value">{{ stats.totalCollected | number:'1.0-0':'fr' }} <em>kg</em></span>
+        <span class="kpi-trend up"><i class="fa-solid fa-arrow-trend-up"></i> +12% vs hier</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap green"><i class="fa-solid fa-circle-check"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-label">Efficacité du tri</span>
+        <span class="kpi-value">{{ stats.sortingEfficiency }}<em>%</em></span>
+        <div class="kpi-bar"><div class="kpi-bar-fill" [style.width.%]="stats.sortingEfficiency"></div></div>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap blue"><i class="fa-solid fa-location-dot"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-label">Poubelles actives</span>
+        <span class="kpi-value">{{ stats.activeBins }}</span>
+        <span class="kpi-trend neutral">{{ stats.fullBins }} nécessitent collecte</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap amber"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-label">Alertes actives</span>
+        <span class="kpi-value alert-red">{{ stats.alertsCount }}</span>
+        <span class="kpi-trend neutral">non résolues</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon-wrap coral"><i class="fa-solid fa-leaf"></i></div>
+      <div class="kpi-content">
+        <span class="kpi-label">CO₂ économisé</span>
+        <span class="kpi-value">{{ stats.co2Saved | number:'1.0-0':'fr' }} <em>kg</em></span>
+        <span class="kpi-trend up">Ce mois-ci</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHARTS ROW 1 -->
+  <section class="charts-row">
+    <div class="card donut-card">
+      <div class="card-header">
+        <div>
+          <h2>Répartition des déchets</h2>
+          <span class="card-sub">Aujourd'hui · {{ stats.totalCollected | number:'1.0-0':'fr' }} kg collectés</span>
+        </div>
+      </div>
+      <div class="donut-wrap">
+        <div class="donut-canvas-wrap">
+          <canvas #donutCanvas></canvas>
+          <div class="donut-center">
+            <span class="dc-value">{{ stats.sortingEfficiency }}%</span>
+            <span class="dc-label">triés</span>
+          </div>
+        </div>
+        <ul class="donut-legend">
+          <li *ngFor="let w of stats.wasteTypes">
+            <span class="dot" [style.background]="w.color"></span>
+            <span class="leg-type">{{ capitalize(w.type) }}</span>
+            <span class="leg-kg">{{ w.kg | number:'1.0-0':'fr' }} kg</span>
+            <span class="leg-pct">{{ w.percent }}%</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card bar-card">
+      <div class="card-header">
+        <div>
+          <h2>Collecte hebdomadaire</h2>
+          <span class="card-sub">7 jours · par type (kg)</span>
+        </div>
+        <div class="bar-legend">
+          <span *ngFor="let w of stats.wasteTypes.slice(0,5)" class="leg-pill">
+            <span class="dot sm" [style.background]="w.color"></span>{{ capitalize(w.type) }}
+          </span>
+        </div>
+      </div>
+      <div class="chart-area"><canvas #barCanvas></canvas></div>
+    </div>
+  </section>
+
+  <!-- CHARTS ROW 2 -->
+  <section class="charts-row-2">
+    <div class="card line-card">
+      <div class="card-header">
+        <div>
+          <h2>Évolution de l'efficacité du tri</h2>
+          <span class="card-sub">30 derniers jours</span>
+        </div>
+      </div>
+      <div class="chart-area"><canvas #lineCanvas></canvas></div>
+    </div>
+
+    <div class="card alerts-card">
+      <div class="card-header">
+        <h2>Alertes récentes</h2>
+        <a routerLink="/alerts" class="card-link">Voir tout →</a>
+      </div>
+      <div class="alerts-list">
+        <p class="empty-state" *ngIf="alerts.length === 0">
+          <i class="fa-solid fa-circle-check"></i> Aucune alerte active
+        </p>
+        <div class="alert-row" *ngFor="let a of alerts" [class]="'alert-' + a.severity">
+          <span class="alert-dot"></span>
+          <div class="alert-body">
+            <span class="alert-id">{{ a.binId }} · {{ a.location }}</span>
+            <span class="alert-msg">{{ a.message }}</span>
+          </div>
+          <span class="alert-time">{{ formatAlertTime(a.createdAt) }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BINS TABLE -->
+  <section class="card bins-card">
+    <div class="card-header bins-header">
+      <div>
+        <h2>État des poubelles connectées</h2>
+      </div>
+      <span class="card-sub">{{ filteredBins.length }} poubelles affichées</span>
+    </div>
+    <div class="tabs">
+      <button [class.active]="activeTab === 'all'"      (click)="activeTab = 'all'">
+        Toutes <span class="tab-count">{{ binStatuses.length }}</span>
+      </button>
+      <button [class.active]="activeTab === 'critical'" (click)="activeTab = 'critical'">
+        Critiques <span class="tab-count danger">{{ countByStatus('critical') }}</span>
+      </button>
+      <button [class.active]="activeTab === 'warning'"  (click)="activeTab = 'warning'">
+        Avertissements <span class="tab-count warning">{{ countByStatus('warning') }}</span>
+      </button>
+      <button [class.active]="activeTab === 'normal'"   (click)="activeTab = 'normal'">
+        Normales <span class="tab-count">{{ countByStatus('normal') }}</span>
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table class="bins-table">
+        <thead>
+          <tr><th>ID</th><th>Emplacement</th><th>Type</th><th>Remplissage</th><th>Statut</th><th>Dernière MAJ</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let bin of filteredBins" [class]="'row-' + bin.status">
+            <td class="bin-id">{{ bin.id }}</td>
+            <td>{{ bin.location }}</td>
+            <td><span class="type-tag">{{ capitalize(bin.type) }}</span></td>
+            <td>
+              <div class="fill-row">
+                <div class="fill-track">
+                  <div class="fill-thumb" [style.width.%]="bin.fillLevel" [style.background]="getFillColor(bin.fillLevel)"></div>
+                </div>
+                <span class="fill-pct" [style.color]="getFillColor(bin.fillLevel)">{{ bin.fillLevel }}%</span>
+              </div>
+            </td>
+            <td><span [class]="'status-tag ' + getStatusClass(bin.status)">{{ getStatusLabel(bin.status) }}</span></td>
+            <td class="muted">{{ formatLastUpdate(bin.lastUpdate) }}</td>
+            <td>
+              <button class="action-btn" [class.urgent]="bin.status !== 'normal'" [disabled]="bin.status === 'normal'">
+                <i class="fa-solid fa-truck-fast"></i> Planifier
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="filteredBins.length === 0">
+            <td colspan="7" class="empty-row">Aucune poubelle trouvée</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>

@@ -1,0 +1,40 @@
+<header class="top-header">
+  <div class="header-left">
+    <h1 class="page-title">Collectes</h1>
+    <span class="refresh-info">{{ collections.length }} collectes · {{ totalKg }} kg total</span>
+  </div>
+  <div class="header-right">
+    <button class="btn-refresh" (click)="load()"><i class="fa-solid fa-rotate-right"></i> Actualiser</button>
+  </div>
+</header>
+
+<div class="page-body">
+  <div class="loading-overlay" *ngIf="loading">
+    <i class="fa-solid fa-spinner fa-spin"></i><span>Chargement…</span>
+  </div>
+
+  <div class="card" *ngIf="!loading">
+    <div class="table-wrap">
+      <table class="bins-table">
+        <thead>
+          <tr>
+            <th>Date</th><th>Poubelle</th><th>Type de déchet</th><th>Poids (kg)</th><th>Opérateur</th><th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of collections">
+            <td class="muted">{{ fmtDate(c.collectedAt) }}</td>
+            <td class="bin-id">{{ c.binId }}</td>
+            <td><span class="type-tag">{{ capitalize(c.wasteType) }}</span></td>
+            <td><strong>{{ c.weightKg }}</strong> kg</td>
+            <td>{{ c.collectedBy || '—' }}</td>
+            <td class="muted">{{ c.notes || '—' }}</td>
+          </tr>
+          <tr *ngIf="collections.length === 0">
+            <td colspan="6" class="empty-row">Aucune collecte enregistrée</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

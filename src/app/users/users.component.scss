@@ -1,0 +1,11 @@
+.user-cell { display:flex; align-items:center; gap:10px; }
+.user-avatar {
+  width:32px; height:32px; border-radius:50%; background:var(--ts-primary);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; font-size:12px; font-weight:700; flex-shrink:0;
+}
+.role-tag { padding:3px 10px; border-radius:20px; font-size:11.5px; font-weight:600;
+  &.role-admin   { background:rgba(55,138,221,0.1); color:#2566a8; }
+  &.role-op      { background:rgba(29,158,117,0.1); color:var(--ts-primary); }
+  &.role-viewer  { background:#F2F4F2; color:var(--ts-gray); }
+}

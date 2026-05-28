@@ -1,0 +1,63 @@
+<div class="app-shell">
+
+  <!-- ══════ SIDEBAR ══════ -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo"><i class="fa-solid fa-recycle"></i></div>
+      <span class="brand-name">TrashSmart</span>
+      <span class="brand-badge">Admin</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <span class="nav-group-label">Principal</span>
+        <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+          <i class="fa-solid fa-gauge-high"></i><span>Tableau de bord</span>
+        </a>
+        <a routerLink="/bins" routerLinkActive="active" class="nav-item">
+          <i class="fa-solid fa-trash-can"></i><span>Poubelles</span>
+        </a>
+        <a routerLink="/collections" routerLinkActive="active" class="nav-item">
+          <i class="fa-solid fa-truck"></i><span>Collectes</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <span class="nav-group-label">Analyse</span>
+        <a routerLink="/analytics" routerLinkActive="active" class="nav-item">
+          <i class="fa-solid fa-chart-bar"></i><span>Analytiques</span>
+        </a>
+        <a routerLink="/alerts" routerLinkActive="active" class="nav-item">
+          <i class="fa-solid fa-bell"></i><span>Alertes</span>
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <span class="nav-group-label">Administration</span>
+        <a routerLink="/users" routerLinkActive="active" class="nav-item">
+          <i class="fa-solid fa-users"></i><span>Utilisateurs</span>
+        </a>
+        <a routerLink="/settings" routerLinkActive="active" class="nav-item">
+          <i class="fa-solid fa-gear"></i><span>Paramètres</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-avatar">{{ initials }}</div>
+      <div class="admin-info">
+        <span class="admin-name">{{ user?.name || 'Admin' }}</span>
+        <span class="admin-role">{{ user?.role | titlecase }} · TrashSmart</span>
+      </div>
+      <button class="logout-btn" (click)="logout()" title="Déconnexion">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ══════ PAGE CONTENT ══════ -->
+  <div class="page-content">
+    <router-outlet></router-outlet>
+  </div>
+
+</div>
