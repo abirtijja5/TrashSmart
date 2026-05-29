@@ -1,0 +1,1 @@
+# Documentation du projet TrashSmart avec Git et GitHub
