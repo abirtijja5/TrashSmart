@@ -17,17 +17,17 @@
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
 
       <div class="field">
-        <label for="email">Adresse email</label>
+        <label for="username">Nom d'utilisateur</label>
         <input
-          id="email"
-          type="email"
-          formControlName="email"
-          placeholder="admin@trashsmart.fr"
-          autocomplete="email"
-          [class.invalid]="emailCtrl.invalid && emailCtrl.touched"
+          id="username"
+          type="text"
+          formControlName="username"
+          placeholder="admin"
+          autocomplete="username"
+          [class.invalid]="usernameCtrl.invalid && usernameCtrl.touched"
         />
-        <span class="field-error" *ngIf="emailCtrl.invalid && emailCtrl.touched">
-          Email invalide
+        <span class="field-error" *ngIf="usernameCtrl.invalid && usernameCtrl.touched">
+          Nom d'utilisateur requis
         </span>
       </div>
 

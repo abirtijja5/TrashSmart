@@ -27,8 +27,15 @@ export class UsersComponent implements OnInit {
 
   load() {
     this.loading = true;
-    this.http.get<any[]>(`${environment.apiUrl}/users`).subscribe({
-      next: u => { this.users = u; this.loading = false; },
+    this.http.get<any[]>(`${environment.apiUrl}/auth/users`).subscribe({
+      next: u => {
+        this.users = u.map(x => ({
+          ...x,
+          name: x.username,
+          role: x.roles?.[0]?.roleName ?? 'USER',
+        }));
+        this.loading = false;
+      },
       error: () => { this.loading = false; },
     });
   }
@@ -41,7 +48,7 @@ export class UsersComponent implements OnInit {
 
   openEdit(user: any) {
     this.editingUser = user;
-    this.form = { email: user.email, name: user.name, password: '', role: user.role };
+    this.form = { email: user.email, name: user.username ?? user.name, password: '', role: user.role };
     this.showUserModal = true;
   }
 
@@ -53,8 +60,8 @@ export class UsersComponent implements OnInit {
     if (this.form.password.trim()) body.password = this.form.password;
 
     const req = this.editingUser
-      ? this.http.patch(`${environment.apiUrl}/users/${this.editingUser.id}`, body)
-      : this.http.post(`${environment.apiUrl}/users`, body);
+      ? this.http.put(`${environment.apiUrl}/auth/users/${this.editingUser.id}`, { email: body.email, password: body.password })
+      : this.http.post(`${environment.apiUrl}/auth/register`, { username: body.name, email: body.email, password: body.password });
     req.subscribe({
       next: () => { this.showUserModal = false; this.saving = false; this.load(); this.notify(this.editingUser ? 'Utilisateur modifié' : 'Utilisateur créé', true); },
       error: () => { this.saving = false; this.notify('Erreur lors de la sauvegarde', false); },
@@ -65,7 +72,7 @@ export class UsersComponent implements OnInit {
 
   confirmDelete() {
     this.saving = true;
-    this.http.delete(`${environment.apiUrl}/users/${this.deletingUser.id}`).subscribe({
+    this.http.delete(`${environment.apiUrl}/auth/users/${this.deletingUser.id}`).subscribe({
       next: () => { this.showDeleteModal = false; this.saving = false; this.load(); this.notify('Utilisateur supprimé', true); },
       error: () => { this.saving = false; this.notify('Erreur lors de la suppression', false); },
     });
@@ -76,8 +83,8 @@ export class UsersComponent implements OnInit {
     setTimeout(() => this.toast = null, 3000);
   }
 
-  getRoleLabel(r: string) { return ({admin:'Administrateur', operator:'Opérateur', viewer:'Lecteur'} as any)[r] ?? r; }
-  getRoleClass(r: string) { return ({admin:'role-admin', operator:'role-op', viewer:'role-viewer'} as any)[r] ?? ''; }
+  getRoleLabel(r: string) { return ({ADMIN:'Administrateur', USER:'Utilisateur', 'TRASH-SMART_MANAGER':'Manager', TRASHCAN_MANAGER:'Responsable poubelles', WASTE_MANAGER:'Responsable déchets'} as any)[r] ?? r; }
+  getRoleClass(r: string) { return ({ADMIN:'role-admin', USER:'role-viewer', 'TRASH-SMART_MANAGER':'role-op', TRASHCAN_MANAGER:'role-op', WASTE_MANAGER:'role-op'} as any)[r] ?? ''; }
   fmtDate(d: any) { return d ? new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'short', year:'numeric' }) : '—'; }
   initials(name: string) { return (name || '?').split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0,2); }
 }

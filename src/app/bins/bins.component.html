@@ -32,9 +32,9 @@
         </thead>
         <tbody>
           <tr *ngFor="let bin of filtered" [class]="'row-' + bin.status">
-            <td class="bin-id">{{ bin.id }}</td>
-            <td>{{ bin.location }}</td>
-            <td><span class="type-tag">{{ capitalize(bin.type) }}</span></td>
+            <td class="bin-id">{{ bin.reference || bin.id }}</td>
+            <td>{{ bin.locationName }}</td>
+            <td><span class="type-tag">—</span></td>
             <td>
               <div class="fill-row">
                 <div class="fill-track"><div class="fill-thumb" [style.width.%]="bin.fillLevel" [style.background]="getFillColor(bin.fillLevel)"></div></div>
@@ -71,24 +71,26 @@
     </div>
     <div class="modal-body">
       <div class="form-group" *ngIf="!editingBin">
-        <label>Identifiant (ex: B-009)</label>
-        <input type="text" [(ngModel)]="binForm.id" placeholder="B-009" />
+        <label>Référence (ex: B-009)</label>
+        <input type="text" [(ngModel)]="binForm.reference" placeholder="B-009" />
       </div>
       <div class="form-group">
         <label>Emplacement</label>
-        <input type="text" [(ngModel)]="binForm.location" placeholder="Rue, quartier..." />
+        <input type="text" [(ngModel)]="binForm.locationName" placeholder="Rue, quartier..." />
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label>Type de déchet</label>
-          <select [(ngModel)]="binForm.type">
-            <option *ngFor="let t of TYPES" [value]="t">{{ capitalize(t) }}</option>
-          </select>
+          <label>Latitude</label>
+          <input type="number" [(ngModel)]="binForm.latitude" step="0.0001" placeholder="ex: 36.7372" />
         </div>
         <div class="form-group">
-          <label>Remplissage (%)</label>
-          <input type="number" [(ngModel)]="binForm.fillLevel" min="0" max="100" placeholder="0" />
+          <label>Longitude</label>
+          <input type="number" [(ngModel)]="binForm.longitude" step="0.0001" placeholder="ex: 3.0869" />
         </div>
+      </div>
+      <div class="form-group">
+        <label>Remplissage (%)</label>
+        <input type="number" [(ngModel)]="binForm.fillLevel" min="0" max="100" placeholder="0" />
       </div>
     </div>
     <div class="modal-footer">
@@ -109,7 +111,7 @@
     </div>
     <div class="modal-body">
       <p style="color:#555;line-height:1.6">
-        Confirmer la suppression de <strong>{{ deletingBin?.id }}</strong> — {{ deletingBin?.location }} ?<br>
+        Confirmer la suppression de <strong>{{ deletingBin?.reference || deletingBin?.id }}</strong> — {{ deletingBin?.locationName }} ?<br>
         <span style="color:#E24B4A;font-size:12px">Cette action est irréversible.</span>
       </p>
     </div>
@@ -131,7 +133,7 @@
     </div>
     <div class="modal-body">
       <div style="background:var(--ts-primary-lt);border-radius:8px;padding:10px 14px;font-size:13px;color:#0F6E56;margin-bottom:4px">
-        <strong>{{ planningBin?.id }}</strong> · {{ planningBin?.location }} · {{ capitalize(planningBin?.type) }} · <strong>{{ planningBin?.fillLevel }}%</strong>
+        <strong>{{ planningBin?.reference || planningBin?.id }}</strong> · {{ planningBin?.locationName }} · <strong>{{ planningBin?.fillLevel }}%</strong>
       </div>
       <div class="form-group">
         <label>Poids collecté (kg)</label>

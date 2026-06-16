@@ -28,8 +28,8 @@ export class BinsComponent implements OnInit {
 
   load() {
     this.loading = true;
-    this.http.get<any[]>(`${environment.apiUrl}/bins`).subscribe({
-      next: b => { this.bins = b; this.loading = false; },
+    this.http.get<any[]>(`${environment.apiUrl}/trashcans`).subscribe({
+      next: b => { this.bins = b.map(x => ({ ...x, status: x.isBlocked ? 'critical' : x.isFull ? 'warning' : 'normal' })); this.loading = false; },
       error: () => { this.loading = false; },
     });
   }
@@ -39,7 +39,7 @@ export class BinsComponent implements OnInit {
     if (this.activeTab !== 'all') b = b.filter(x => x.status === this.activeTab);
     if (this.searchQuery.trim()) {
       const q = this.searchQuery.toLowerCase();
-      b = b.filter(x => x.id.toLowerCase().includes(q) || x.location.toLowerCase().includes(q));
+      b = b.filter(x => String(x.id).toLowerCase().includes(q) || (x.locationName || '').toLowerCase().includes(q));
     }
     return b;
   }
@@ -48,22 +48,23 @@ export class BinsComponent implements OnInit {
 
   openNew() {
     this.editingBin = null;
-    this.binForm = { id: '', location: '', type: 'plastique', fillLevel: 0 };
+    this.binForm = { reference: '', locationName: '', fillLevel: 0, latitude: 0, longitude: 0 };
     this.showBinModal = true;
   }
 
   openEdit(bin: any) {
     this.editingBin = bin;
-    this.binForm = { id: bin.id, location: bin.location, type: bin.type, fillLevel: bin.fillLevel };
+    this.binForm = { reference: bin.reference, locationName: bin.locationName, fillLevel: bin.fillLevel, latitude: bin.latitude, longitude: bin.longitude };
     this.showBinModal = true;
   }
 
   saveBin() {
-    if (!this.binForm.location.trim()) return;
+    if (!this.binForm.locationName?.trim()) return;
     this.saving = true;
+    const payload = { ...this.binForm, fillLevel: +this.binForm.fillLevel, isFull: false, isBlocked: false };
     const req = this.editingBin
-      ? this.http.patch(`${environment.apiUrl}/bins/${this.editingBin.id}`, { location: this.binForm.location, type: this.binForm.type, fillLevel: +this.binForm.fillLevel })
-      : this.http.post(`${environment.apiUrl}/bins`, { ...this.binForm, fillLevel: +this.binForm.fillLevel });
+      ? this.http.put(`${environment.apiUrl}/trashcans/${this.editingBin.id}`, payload)
+      : this.http.post(`${environment.apiUrl}/trashcans`, payload);
     req.subscribe({
       next: () => { this.showBinModal = false; this.saving = false; this.load(); this.notify(this.editingBin ? 'Poubelle modifiée' : 'Poubelle créée', true); },
       error: () => { this.saving = false; this.notify('Erreur lors de la sauvegarde', false); },
@@ -74,7 +75,7 @@ export class BinsComponent implements OnInit {
 
   confirmDelete() {
     this.saving = true;
-    this.http.delete(`${environment.apiUrl}/bins/${this.deletingBin.id}`).subscribe({
+    this.http.delete(`${environment.apiUrl}/trashcans/${this.deletingBin.id}`).subscribe({
       next: () => { this.showDeleteModal = false; this.saving = false; this.load(); this.notify('Poubelle supprimée', true); },
       error: () => { this.saving = false; this.notify('Erreur lors de la suppression', false); },
     });

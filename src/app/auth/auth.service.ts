@@ -5,8 +5,7 @@ import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
+  token: string;
 }
 
 export interface CurrentUser {
@@ -44,9 +43,9 @@ export class AuthService {
     }
   }
 
-  login(email: string, password: string): Observable<AuthTokens> {
+  login(username: string, password: string): Observable<AuthTokens> {
     return this.http
-      .post<AuthTokens>(`${environment.apiUrl}/auth/login`, { email, password })
+      .post<AuthTokens>(`${environment.apiUrl}/auth/login`, { username, password })
       .pipe(tap(tokens => this.storeTokens(tokens)));
   }
 
@@ -70,10 +69,8 @@ export class AuthService {
   }
 
   private storeTokens(tokens: AuthTokens): void {
-    localStorage.setItem(this.ACCESS_KEY, tokens.accessToken);
-    localStorage.setItem(this.REFRESH_KEY, tokens.refreshToken);
-    // Décode le payload localement pour éviter un appel réseau inutile
-    this.loadUserFromToken(tokens.accessToken);
+    localStorage.setItem(this.ACCESS_KEY, tokens.token);
+    this.loadUserFromToken(tokens.token);
   }
 
   private loadUserFromToken(token: string): void {

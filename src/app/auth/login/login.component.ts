@@ -20,7 +20,7 @@ export class LoginComponent {
     private router: Router,
   ) {
     this.form = this.fb.group({
-      email:    ['', [Validators.required, Validators.email]],
+      username: ['', [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
     });
 
@@ -36,9 +36,9 @@ export class LoginComponent {
     }
     this.loading = true;
     this.error = '';
-    const { email, password } = this.form.value;
+    const { username, password } = this.form.value;
 
-    this.auth.login(email, password).subscribe({
+    this.auth.login(username, password).subscribe({
       next: () => this.router.navigate(['/dashboard']),
       error: () => {
         this.loading = false;
@@ -47,6 +47,6 @@ export class LoginComponent {
     });
   }
 
-  get emailCtrl() { return this.form.get('email')!; }
-  get passCtrl()  { return this.form.get('password')!; }
+  get usernameCtrl() { return this.form.get('username')!; }
+  get passCtrl()     { return this.form.get('password')!; }
 }
