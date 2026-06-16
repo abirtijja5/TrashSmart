@@ -45,7 +45,7 @@ export class WasteService {
           sortingEfficiency: totalKg ? Math.round((wastes.filter((w: any) => w.wasteType !== 'OTHER').reduce((s: number, w: any) => s + w.weight, 0) / totalKg) * 100) : 0,
           activeBins: trashcans.length,
           fullBins,
-          alertsCount: alerts.filter((a: any) => !a.acknowledged && !a.isAcknowledged).length,
+          alertsCount: alerts.length,
           co2Saved: Math.round(totalKg * 0.5 * 10) / 10,
           wasteTypes: sorted,
         };

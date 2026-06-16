@@ -1,0 +1,177 @@
+<div class="profile-page">
+
+  <div class="loading-overlay" *ngIf="loading">
+    <i class="fa-solid fa-spinner fa-spin"></i><span>Chargement…</span>
+  </div>
+
+  <ng-container *ngIf="!loading">
+
+    <!-- Header -->
+    <div class="profile-header">
+      <div class="avatar-wrap">
+        <div class="avatar">{{ initials }}</div>
+        <div class="avatar-badge" [style.background]="rewardColor">
+          <i class="fa-solid fa-star"></i>
+        </div>
+      </div>
+      <div class="header-info">
+        <h1 class="username">{{ appUser?.username }}</h1>
+        <p class="email">{{ appUser?.email }}</p>
+        <div class="roles">
+          <span class="role-tag" *ngFor="let r of appUser?.roles">{{ r.roleName }}</span>
+        </div>
+      </div>
+      <button class="btn-edit" (click)="startEdit()" *ngIf="!editing">
+        <i class="fa-solid fa-pen"></i> Modifier
+      </button>
+    </div>
+
+    <div class="profile-grid">
+
+      <!-- Infos personnelles -->
+      <div class="card">
+        <div class="card-header">
+          <i class="fa-solid fa-user" style="color:var(--ts-primary)"></i>
+          <h2>Informations personnelles</h2>
+        </div>
+        <div class="card-body">
+          <ng-container *ngIf="!editing">
+            <div class="info-row">
+              <span class="info-label">Prénom</span>
+              <span class="info-val">{{ profile?.firstName || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Nom</span>
+              <span class="info-val">{{ profile?.lastName || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Téléphone</span>
+              <span class="info-val">{{ profile?.phone || '—' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Compte</span>
+              <span class="info-val">
+                <span class="status-dot" [class.active]="appUser?.enabled"></span>
+                {{ appUser?.enabled ? 'Actif' : 'Désactivé' }}
+              </span>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="editing">
+            <div class="form-group">
+              <label>Prénom</label>
+              <input type="text" [(ngModel)]="form.firstName" placeholder="Jean" />
+            </div>
+            <div class="form-group">
+              <label>Nom</label>
+              <input type="text" [(ngModel)]="form.lastName" placeholder="Dupont" />
+            </div>
+            <div class="form-group">
+              <label>Téléphone</label>
+              <input type="tel" [(ngModel)]="form.phone" placeholder="06 01 02 03 04" />
+            </div>
+            <div class="form-actions">
+              <button class="btn-secondary" (click)="cancelEdit()">Annuler</button>
+              <button class="btn-primary" (click)="save()" [disabled]="saving">
+                <i class="fa-solid fa-floppy-disk"></i>
+                {{ saving ? 'Sauvegarde...' : 'Enregistrer' }}
+              </button>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+
+      <!-- Points & niveau -->
+      <div class="card reward-card">
+        <div class="card-header">
+          <i class="fa-solid fa-trophy" [style.color]="rewardColor"></i>
+          <h2>Points & Niveau</h2>
+        </div>
+        <div class="card-body">
+          <div class="reward-score">
+            <span class="score-number">{{ profile?.rewardPoints ?? 0 }}</span>
+            <span class="score-label">points</span>
+          </div>
+          <div class="reward-level" [style.color]="rewardColor">
+            <i class="fa-solid fa-medal"></i> Niveau {{ rewardLevel }}
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="rewardProgress" [style.background]="rewardColor"></div>
+          </div>
+          <p class="progress-hint">
+            <ng-container *ngIf="rewardLevel === 'Bronze'">{{ 200 - (profile?.rewardPoints ?? 0) }} pts pour Argent</ng-container>
+            <ng-container *ngIf="rewardLevel === 'Argent'">{{ 500 - (profile?.rewardPoints ?? 0) }} pts pour Or</ng-container>
+            <ng-container *ngIf="rewardLevel === 'Or'">Niveau maximum atteint !</ng-container>
+          </p>
+        </div>
+      </div>
+
+      <!-- Préférences -->
+      <div class="card">
+        <div class="card-header">
+          <i class="fa-solid fa-sliders" style="color:var(--ts-blue)"></i>
+          <h2>Préférences</h2>
+        </div>
+        <div class="card-body pref-body">
+          <div class="pref-row">
+            <div class="pref-info">
+              <i class="fa-solid fa-location-dot" style="color:var(--ts-primary)"></i>
+              <div>
+                <div class="pref-label">Localisation</div>
+                <div class="pref-sub">Autoriser l'accès à votre position</div>
+              </div>
+            </div>
+            <label class="toggle" [class.disabled]="!editing">
+              <input type="checkbox" [(ngModel)]="form.isLocationAccepted" [disabled]="!editing" />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="pref-row">
+            <div class="pref-info">
+              <i class="fa-solid fa-bell" style="color:var(--ts-amber)"></i>
+              <div>
+                <div class="pref-label">Notifications push</div>
+                <div class="pref-sub">Recevoir les alertes en temps réel</div>
+              </div>
+            </div>
+            <label class="toggle" [class.disabled]="!editing">
+              <input type="checkbox" [(ngModel)]="form.pushNotificationsEnabled" [disabled]="!editing" />
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="pref-row" *ngIf="profile?.lastLatitude">
+            <div class="pref-info">
+              <i class="fa-solid fa-map-pin" style="color:var(--ts-coral)"></i>
+              <div>
+                <div class="pref-label">Dernière position</div>
+                <div class="pref-sub">{{ profile.lastLatitude | number:'1.4-4' }}, {{ profile.lastLongitude | number:'1.4-4' }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="pref-actions" *ngIf="editing">
+            <button class="btn-primary" (click)="save()" [disabled]="saving">
+              <i class="fa-solid fa-floppy-disk"></i> Enregistrer les préférences
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pas de profil encore -->
+      <div class="card create-card" *ngIf="!profile && !editing">
+        <div class="card-body empty-profile">
+          <i class="fa-solid fa-user-plus"></i>
+          <p>Aucun profil mobile associé à ce compte.</p>
+          <button class="btn-primary" (click)="startEdit()">Créer mon profil</button>
+        </div>
+      </div>
+
+    </div>
+  </ng-container>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" *ngIf="toast" [class]="toast.ok ? 'toast-success' : 'toast-error'">
+  <i [class]="toast.ok ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-xmark'"></i>
+  {{ toast.msg }}
+</div>

@@ -15,6 +15,7 @@ import { AnalyticsComponent }    from './analytics/analytics.component';
 import { AlertsComponent }       from './alerts/alerts.component';
 import { UsersComponent }        from './users/users.component';
 import { SettingsComponent }     from './settings/settings.component';
+import { ProfileComponent }      from './profile/profile.component';
 
 import { AuthInterceptor }  from './auth/interceptors/auth.interceptor';
 import { AuthGuard }        from './auth/guards/auth.guard';
@@ -34,6 +35,7 @@ const routes: Routes = [
       { path: 'alerts',      component: AlertsComponent      },
       { path: 'users',       component: UsersComponent       },
       { path: 'settings',    component: SettingsComponent    },
+      { path: 'profile',     component: ProfileComponent      },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },
@@ -51,6 +53,7 @@ const routes: Routes = [
     AlertsComponent,
     UsersComponent,
     SettingsComponent,
+    ProfileComponent,
   ],
   imports: [
     BrowserModule,
